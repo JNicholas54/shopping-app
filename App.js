@@ -1,11 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+
 //import react navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+const Stack = createNativeStackNavigator();
+
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+
+import ShoppingLists from './components/ShoppingLists';
 
 const App = () => {
   const firebaseConfig = {
@@ -25,7 +30,11 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator></Stack.Navigator>
+      <Stack.Navigator initialRouteName='ShoppingLists'>
+        <Stack.Screen name='ShoppingLists'>
+          {(props) => <ShoppingLists db={db} {...props} />}
+        </Stack.Screen>
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };
