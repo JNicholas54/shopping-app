@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, onSnapshot } from 'firebase/firestore';
 
 const ShoppingLists = ({ db }) => {
   const [lists, setLists] = useState([]);
@@ -36,7 +36,21 @@ const ShoppingLists = ({ db }) => {
   };
 
   useEffect(() => {
-    fetchShoppingLists();
+    const unsubShoppinglists = onSnapshot(
+      collection(db, 'shoppinglists'),
+      (documentsSnapshot) => {
+        let newLists = [];
+        documentsSnapshot.forEach((doc) => {
+          newLists.push({ id: doc.id, ...doc.data() });
+        });
+        setLists(newLists);
+      }
+    );
+
+    // Clean up code
+    return () => {
+      if (unsubShoppinglists) unsubShoppinglists();
+    };
   }, []);
 
   return (
