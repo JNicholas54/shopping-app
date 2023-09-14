@@ -1,57 +1,58 @@
+import { useEffect, useState } from 'react';
 import {
   StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
   View,
-  Text,
   FlatList,
+  Text,
   TextInput,
+  KeyboardAvoidingView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  where,
+} from 'firebase/firestore';
 
-const ShoppingLists = ({ db }) => {
+const ShoppingLists = ({ db, route }) => {
+  const { userID } = route.params;
+
   const [lists, setLists] = useState([]);
   const [listName, setListName] = useState('');
   const [item1, setItem1] = useState('');
   const [item2, setItem2] = useState('');
 
-  const fetchShoppingLists = async () => {
-    const listsDocuments = await getDocs(collection(db, 'shoppinglists'));
-    let newLists = [];
-    listsDocuments.forEach((docObject) => {
-      newLists.push({ id: docObject.id, ...docObject.data() });
-    });
-    setLists(newLists);
-  };
-
-  const addShoppingList = async (newList) => {
-    const newListRef = await addDoc(collection(db, 'shoppinglists'), newList);
-    if (newListRef.id) {
-      Alert.alert(`The list "${listName}" has been added.`);
-    } else {
-      Alert.alert('Unable to add. Please try later');
-    }
-  };
-
   useEffect(() => {
-    const unsubShoppinglists = onSnapshot(
+    const q = query(
       collection(db, 'shoppinglists'),
-      (documentsSnapshot) => {
-        let newLists = [];
-        documentsSnapshot.forEach((doc) => {
-          newLists.push({ id: doc.id, ...doc.data() });
-        });
-        setLists(newLists);
-      }
+      where('uid', '==', userID)
     );
+    const unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+      let newLists = [];
+      documentsSnapshot.forEach((doc) => {
+        newLists.push({ id: doc.id, ...doc.data() });
+      });
+      setLists(newLists);
+    });
 
     // Clean up code
     return () => {
       if (unsubShoppinglists) unsubShoppinglists();
     };
   }, []);
+
+  const addShoppingList = async (newList) => {
+    const newListRef = await addDoc(collection(db, 'shoppinglists'), newList);
+    if (newListRef.id) {
+      setLists([newList, ...lists]);
+      Alert.alert(`The list "${listName}" has been added.`);
+    } else {
+      Alert.alert('Unable to add. Please try later');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -87,12 +88,14 @@ const ShoppingLists = ({ db }) => {
         />
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() =>
-            addShoppingList({
+          onPress={() => {
+            const newList = {
+              uid: userID,
               name: listName,
               items: [item1, item2],
-            })
-          }
+            };
+            addShoppingList(newList);
+          }}
         >
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
@@ -134,6 +137,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderColor: '#D0D0D0', // Gray
     borderWidth: 2,
+    backgroundColor: '#FFFFFF', // White
   },
   item: {
     height: 50,
@@ -142,6 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderColor: '#D0D0D0', // Gray
     borderWidth: 2,
+    backgroundColor: '#FFFFFF', // White
   },
   addButton: {
     justifyContent: 'center',
@@ -153,6 +158,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // White
     fontWeight: '600',
     fontSize: 20,
+  },
+  logoutButton: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    backgroundColor: '#C00', // Red
+    padding: 10,
+    zIndex: 1,
+  },
+  logoutButtonText: {
+    color: '#FFFFFF', // White
+    fontSize: 10,
   },
 });
 

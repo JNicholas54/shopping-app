@@ -1,6 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-
 //import react navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -11,6 +8,10 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 import ShoppingLists from './components/ShoppingLists';
+import Welcome from './components/Welcome';
+
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['AsyncStorage has been extracted from']);
 
 const App = () => {
   const firebaseConfig = {
@@ -30,7 +31,8 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='ShoppingLists'>
+      <Stack.Navigator initialRouteName='Welcome'>
+        <Stack.Screen name='Welcome' component={Welcome} />
         <Stack.Screen name='ShoppingLists'>
           {(props) => <ShoppingLists db={db} {...props} />}
         </Stack.Screen>
