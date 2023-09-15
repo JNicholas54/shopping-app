@@ -28,11 +28,6 @@ const ShoppingLists = ({ db, route }) => {
   const [item2, setItem2] = useState('');
   const connectionStatus = useNetInfo();
 
-  useEffect(() => {
-    if (connectionStatus.isConnected === false)
-      Alert.alert('Coonnection lost!');
-  }, [connectionStatus.isConnected]);
-
   let unsubShoppinglists;
 
   useEffect(() => {
@@ -61,6 +56,12 @@ const ShoppingLists = ({ db, route }) => {
       if (unsubShoppinglists) unsubShoppinglists();
     };
   }, [isConnected]);
+
+  const loadCachedLists = async () => {
+    const cachedLists = (await AsyncStorage.getItem('shopping_lists')) || [];
+    setLists(JSON.parse(cachedLists));
+  };
+
   const cacheShoppingLists = async (listsToCache) => {
     try {
       await AsyncStorage.setItem(
