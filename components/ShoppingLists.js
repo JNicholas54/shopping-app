@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNetInfo } from '@react-native-community/netinfo';
 import {
   StyleSheet,
   View,
@@ -26,41 +25,26 @@ const ShoppingLists = ({ db, route }) => {
   const [listName, setListName] = useState('');
   const [item1, setItem1] = useState('');
   const [item2, setItem2] = useState('');
-  const connectionStatus = useNetInfo();
-
-  let unsubShoppinglists;
 
   useEffect(() => {
-    if (isConnected === true) {
-      // unregister current onSnapshot() listener to avoid registering multiple listeners when
-      // useEffect code is re-executed.
-      if (unsubShoppinglists) unsubShoppinglists();
-      unsubShoppinglists = null;
-
-      const q = query(
-        collection(db, 'shoppinglists'),
-        where('uid', '==', userID)
-      );
-      unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
-        let newLists = [];
-        documentsSnapshot.forEach((doc) => {
-          newLists.push({ id: doc.id, ...doc.data() });
-        });
-        cacheShoppingLists(newLists);
-        setLists(newLists);
+    const q = query(
+      collection(db, 'shoppinglists'),
+      where('uid', '==', userID)
+    );
+    const unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+      let newLists = [];
+      documentsSnapshot.forEach((doc) => {
+        newLists.push({ id: doc.id, ...doc.data() });
       });
-    } else loadCachedLists();
+      cacheShoppingLists(newLists);
+      setLists(newLists);
+    });
 
     // Clean up code
     return () => {
       if (unsubShoppinglists) unsubShoppinglists();
     };
-  }, [isConnected]);
-
-  const loadCachedLists = async () => {
-    const cachedLists = (await AsyncStorage.getItem('shopping_lists')) || [];
-    setLists(JSON.parse(cachedLists));
-  };
+  }, []);
 
   const cacheShoppingLists = async (listsToCache) => {
     try {
@@ -96,41 +80,39 @@ const ShoppingLists = ({ db, route }) => {
           </View>
         )}
       />
-      {isConnected === ture ? (
-        <View style={styles.listForm}>
-          <TextInput
-            style={styles.listName}
-            placeholder='List Name'
-            value={listName}
-            onChangeText={setListName}
-          />
-          <TextInput
-            style={styles.item}
-            placeholder='Item #1'
-            value={item1}
-            onChangeText={setItem1}
-          />
-          <TextInput
-            style={styles.item}
-            placeholder='Item #2'
-            value={item2}
-            onChangeText={setItem2}
-          />
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => {
-              const newList = {
-                uid: userID,
-                name: listName,
-                items: [item1, item2],
-              };
-              addShoppingList(newList);
-            }}
-          >
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      ) : null}
+      <View style={styles.listForm}>
+        <TextInput
+          style={styles.listName}
+          placeholder='List Name'
+          value={listName}
+          onChangeText={setListName}
+        />
+        <TextInput
+          style={styles.item}
+          placeholder='Item #1'
+          value={item1}
+          onChangeText={setItem1}
+        />
+        <TextInput
+          style={styles.item}
+          placeholder='Item #2'
+          value={item2}
+          onChangeText={setItem2}
+        />
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => {
+            const newList = {
+              uid: userID,
+              name: listName,
+              items: [item1, item2],
+            };
+            addShoppingList(newList);
+          }}
+        >
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
       {Platform.OS === 'ios' ? (
         <KeyboardAvoidingView behavior='padding' />
       ) : null}
@@ -141,24 +123,22 @@ const ShoppingLists = ({ db, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7', // Light Gray
   },
   listItem: {
     height: 70,
     justifyContent: 'center',
     paddingHorizontal: 30,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0', // Light Gray
+    borderBottomColor: '#AAA',
     flex: 1,
     flexGrow: 1,
-    backgroundColor: '#FFFFFF', // White
   },
   listForm: {
     flexBasis: 275,
     flex: 0,
     margin: 15,
     padding: 15,
-    backgroundColor: '#F2F2F2', // Gray
+    backgroundColor: '#CCC',
   },
   listName: {
     height: 50,
@@ -166,27 +146,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginRight: 50,
     marginBottom: 15,
-    borderColor: '#D0D0D0', // Gray
+    borderColor: '#555',
     borderWidth: 2,
-    backgroundColor: '#FFFFFF', // White
   },
   item: {
     height: 50,
     padding: 15,
     marginLeft: 50,
     marginBottom: 15,
-    borderColor: '#D0D0D0', // Gray
+    borderColor: '#555',
     borderWidth: 2,
-    backgroundColor: '#FFFFFF', // White
   },
   addButton: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 50,
-    backgroundColor: '#0077B6', // Dark Blue
+    backgroundColor: '#000',
+    color: '#FFF',
   },
   addButtonText: {
-    color: '#FFFFFF', // White
+    color: '#FFF',
     fontWeight: '600',
     fontSize: 20,
   },
@@ -194,12 +173,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    backgroundColor: '#C00', // Red
+    backgroundColor: '#C00',
     padding: 10,
     zIndex: 1,
   },
   logoutButtonText: {
-    color: '#FFFFFF', // White
+    color: '#FFF',
     fontSize: 10,
   },
 });
