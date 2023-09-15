@@ -5,15 +5,33 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import {
+  getFirestore,
+  disableNetwork,
+  enableNetwork,
+} from 'firebase/firestore';
 
 import ShoppingLists from './components/ShoppingLists';
 import Welcome from './components/Welcome';
 
-import { LogBox } from 'react-native';
+import { LogBox, Alert } from 'react-native';
+import { useEffect } from 'react';
+import { useNetInfo } from '@react-native-community/netinfo';
+
 LogBox.ignoreLogs(['AsyncStorage has been extracted from']);
 
 const App = () => {
+  const connectionStatus = useNetInfo();
+
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert('Connection Lost!');
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
+
   const firebaseConfig = {
     apiKey: 'AIzaSyDi-xncyFZuo_WUl0Y-KxW5x6lfN6Nlq7A',
     authDomain: 'shopping-list-demo-5dc5e.firebaseapp.com',
@@ -34,7 +52,13 @@ const App = () => {
       <Stack.Navigator initialRouteName='Welcome'>
         <Stack.Screen name='Welcome' component={Welcome} />
         <Stack.Screen name='ShoppingLists'>
-          {(props) => <ShoppingLists db={db} {...props} />}
+          {(props) => (
+            <ShoppingLists
+              isConnected={connectionStatus.isConnected}
+              db={db}
+              {...props}
+            />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
