@@ -14,9 +14,9 @@ import {
 import ShoppingLists from './components/ShoppingLists';
 import Welcome from './components/Welcome';
 
+import { useNetInfo } from '@react-native-community/netinfo';
 import { LogBox, Alert } from 'react-native';
 import { useEffect } from 'react';
-import { useNetInfo } from '@react-native-community/netinfo';
 
 LogBox.ignoreLogs(['AsyncStorage has been extracted from']);
 
@@ -32,12 +32,6 @@ const App = () => {
     appId: '1:937853527001:web:6671dd471ce18d7384afc8',
   };
 
-  //initialize Firebase
-  const app = initializeApp(firebaseConfig);
-
-  //Initialize cloud firestore and get a reference to the sevice
-  const db = getFirestore(app);
-
   useEffect(() => {
     if (connectionStatus.isConnected === false) {
       Alert.alert('Connection Lost!');
@@ -46,6 +40,12 @@ const App = () => {
       enableNetwork(db);
     }
   }, [connectionStatus.isConnected]);
+
+  //initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  //Initialize cloud firestore and get a reference to the sevice
+  const db = getFirestore(app);
 
   return (
     <NavigationContainer>
