@@ -23,15 +23,6 @@ LogBox.ignoreLogs(['AsyncStorage has been extracted from']);
 const App = () => {
   const connectionStatus = useNetInfo();
 
-  useEffect(() => {
-    if (connectionStatus.isConnected === false) {
-      Alert.alert('Connection Lost!');
-      disableNetwork(db);
-    } else if (connectionStatus.isConnected === true) {
-      enableNetwork(db);
-    }
-  }, [connectionStatus.isConnected]);
-
   const firebaseConfig = {
     apiKey: 'AIzaSyDi-xncyFZuo_WUl0Y-KxW5x6lfN6Nlq7A',
     authDomain: 'shopping-list-demo-5dc5e.firebaseapp.com',
@@ -46,6 +37,15 @@ const App = () => {
 
   //Initialize cloud firestore and get a reference to the sevice
   const db = getFirestore(app);
+
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert('Connection Lost!');
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
 
   return (
     <NavigationContainer>
